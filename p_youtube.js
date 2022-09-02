@@ -38,11 +38,6 @@ async function start(){
     element = document.getElementById("player")
     element.volume = '0.5'
 
-    await addToQueue("https://www.youtube.com/watch?v=GzU8KqOY8YA", null);
-    await addToQueue("https://www.youtube.com/watch?v=9HDEHj2yzew", null);
-    await addToQueue("https://www.youtube.com/watch?v=TUVcZfQe-Kw", null);
-    await addToQueue("https://www.youtube.com/watch?v=QYh6mYIJG2Y", null);
-
     playNext()
     //if (element) element.src = info.formats[0].url
     element.onended = () => {
