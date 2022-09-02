@@ -1,5 +1,6 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, MessageChannelMain, ipcMain } = require('electron')
+const {autoUpdater} = require("electron-updater");
 const path = require('path')
 app.disableHardwareAcceleration()
 const { io } = require("socket.io-client")
@@ -187,6 +188,10 @@ config.loadFile('config.html')
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
+
+app.on('ready', function()  {
+  autoUpdater.checkForUpdatesAndNotify();
+});
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
