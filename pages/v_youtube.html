@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset = 'UTF-8'>
+    <script src="../scripts/v_youtube.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://raw.githack.com/SortableJS/Sortable/master/Sortable.js"></script>
+
+    <script>
+
+    let list
+    let sort
+    let slider
+    let glyphVlm
+    let url
+    let muted = false
+    let last = '0.5'
+
+    const socket = io("ws://localhost:3000")
+
+    window.addEventListener('DOMContentLoaded', () => {
+        glyphVlm = document.getElementById('glyph-volume')
+        slider = document.getElementById('slider');
+        list = document.getElementById('listWithHandle');
+        url = document.getElementById('url');
+        sort = Sortable.create(list, {
+            handle: '.glyphicon-menu-hamburger',
+            animation: 150,
+            forceFallback: true,
+            dataIdAttr: 'data-id',
+            onEnd: function (evt) {
+                console.log(sort.toArray())
+                let data = JSON.stringify(sort.toArray())
+                socket.emit("update-queue",data)
+            }
+        });
+        
+        slider.addEventListener('input', function(){
+            muted = false
+            socket.emit('player-volume', this.value)
+        })
+        
+
+        socket.emit("request-queue", null)
+        socket.emit("request-volume", null)
+    })
+
+    socket.on("queue-data", (args) => {
+        console.log("received queue data");
+        let data = JSON.parse(args)
+        updateList(data)
+    })
+
+    socket.on("volume-data", (args) => {
+        console.log("received queue data");
+        slider.value = args
+        if(args == 0){
+            glyphVlm.classList.remove('glyphicon-volume-up');
+            glyphVlm.classList.remove('glyphicon-volume-down');
+            glyphVlm.classList.add('glyphicon-volume-off');
+        }else if(args<=0.5){
+            glyphVlm.classList.remove('glyphicon-volume-up');
+            glyphVlm.classList.remove('glyphicon-volume-off');
+            glyphVlm.classList.add('glyphicon-volume-down');
+        }else if(args<=1){
+            glyphVlm.classList.remove('glyphicon-volume-down');
+            glyphVlm.classList.remove('glyphicon-volume-off');
+            glyphVlm.classList.add('glyphicon-volume-up');
+        }
+
+    })
+
+    function updateList(queue){
+        list.innerHTML = ""
+        for (let i = 0; i < queue.length; i++) {
+            const template = 
+            `<div class="list-group-item" data-id="${i}">
+            <span class="badge"><span class="glyphicon glyphicon-trash" aria-hidden="true" onclick="socket.emit('remove-queue',$(this).parent().parent().attr('data-id'))"></span></span>
+            <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
+            ${queue[i].title}
+            </div>`
+            list.innerHTML += template
+        }
+        
+    }
+
+    function mute(){
+        if(muted){
+            muted = false
+            socket.emit('player-volume', last)
+        }else{
+            last = slider.value
+            muted = true
+            socket.emit('player-volume', 0)
+        }
+    }
+
+    function addToQueue(){
+        socket.emit('addToQueue', url.value)
+    }
+
+    </script>
+    
+    <style>
+    body{
+        overflow: hidden;
+        background-color: #222222;
+    }
+
+    .glyphicon-menu-hamburger {
+        cursor: move;
+        cursor: -webkit-grabbing;
+    }
+
+    .glyphicon-trash {
+        cursor: pointer;
+    }
+
+    .button-bar {
+        margin: 0px;
+        margin-top: 3px;
+        margin-bottom: 5px;
+        padding: 3px;
+        width: 100%;
+        border-radius: 10px;
+        background-color: #474747;
+        box-sizing: border-box;
+    }
+
+    #listWithHandle{
+        height: 32vh;
+        overflow-y: auto;
+        border-radius: 5px;
+        overflow: overlay;
+    }
+
+    #player{
+        max-height: 60vh;
+    }
+
+    .button-bar{
+        display: flex;
+        gap: 10px;
+        padding-left: 10px;
+    }
+
+    .btn {
+        background-color: dodgerblue;
+        border:0;
+        border-radius: 50px;
+        outline: 0;
+    }
+
+    .btn:focus, .btn:active, .btn:active:focus{
+        outline: none;
+        outline-offset: 0;
+    }
+
+    #btn-play{
+        background-color: orange;
+    }
+
+    .badge{
+        background-color: dodgerblue;
+    }
+
+    .list-group-item{
+        background-color: #333333;
+        color:dodgerblue;
+        border-color:#222222;
+    }
+
+    .list-group{
+        background-color: #474747;
+    }
+
+    .inp{
+        background-color: #333333;
+        border:0;
+        border-radius: 50px;
+        outline: 0;
+        color:lightgray;
+        width: auto;
+        min-width: 47vw;
+    }
+
+    .list-group::-webkit-scrollbar {
+        position: absolute;
+        width: 8px;               /* width of the entire scrollbar */
+    }
+
+    .list-group::-webkit-scrollbar-track {
+        background-color: #00000000;        /* color of the tracking area */
+    }
+
+    .list-group::-webkit-scrollbar-thumb {
+        background-color: #474747;    /* color of the scroll thumb */
+        border-radius: 20px;       /* roundness of the scroll thumb */
+        border: 0px solid #00000000;  /* creates padding around scroll thumb */
+    }
+
+    input[type=range][orient=vertical]
+    {
+        writing-mode: bt-lr; /* IE */
+        -webkit-appearance: slider-vertical; /* Chromium */
+        width: 8px;
+        height: 65px;
+        padding: 0 7px;
+    }
+
+    .vlm{
+        display: none;
+        position: absolute;
+        bottom: 20px;
+        background-color: #00000000;
+        width: 14px;
+        height: 69px;
+    }
+
+    .volume:hover > * > .vlm{
+        display: block;
+    }
+
+    </style>
+</head>
+<body>
+    <video id="player" muted style="width: 100%; height: auto"></video>
+    <!--<img src = "https://www.teahub.io/photos/full/253-2537516_1024-x-720.jpg" style="width: 100%; height: auto">-->
+    <!-- List with handle -->
+
+    <div class="button-bar">
+        <button id="btn-play" class="btn" onclick="socket.emit('player-pause',null)"><span id="glyph-play" class="glyphicon glyphicon-pause"></span></button>
+        <button class="btn" onclick="socket.emit('player-next',null)"><span class="glyphicon glyphicon-step-forward"></span></button>
+        <input type="text" id="url" class="inp" placeholder="youtube-url">
+        <button class="btn"><span class="glyphicon glyphicon-plus" onclick="addToQueue()"></span></button>
+        <button class="btn volume" onclick="mute()">
+            
+            <span id="glyph-volume" class="glyphicon glyphicon-volume-up">
+                <div class="vlm" onclick="event.stopPropagation()">
+                    <input id="slider" type="range" orient="vertical" min="0" max="1" step="0.01" value="0.5"/>
+                </div>
+        </span>
+        
+        </button>
+        <button class="btn" style=" margin-left: auto; margin-right: 10px;" onclick="window.location='settings.html'"><span>Settings</span></button>
+    </div>
+
+    <div id="listWithHandle" class="list-group">
+        <!--<div class="list-group-item">
+        <span class="badge"><span class="glyphicon glyphicon-trash" aria-hidden="true" onclick="console.log('delete')"></span></span>
+        <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
+        Drag me by the handle
+        </div>
+        <div class="list-group-item">
+        <span class="badge">2</span>
+        <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
+        You can also select text
+        </div>
+        <div class="list-group-item">
+        <span class="badge">1</span>
+        <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
+        Best of both worlds!
+        </div>-->
+    </div>
+</body>
+</html>

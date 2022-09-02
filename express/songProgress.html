@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset = 'UTF-8'>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+
+     const socket = io("ws://localhost:3000")
+
+
+        let bg
+        let pb
+        let txt
+
+     let title
+     window.addEventListener('DOMContentLoaded', () => {
+        title = document.getElementById('title')
+        bg = document.getElementById('bg')
+        pb = document.getElementById('pb')
+        txt = document.getElementById('txt')
+        socket.emit('request-config')
+     })
+
+     socket.on('cfg', (args) => {
+            const data = JSON.parse(args)
+            pb.style.backgroundColor = data.progressBarColor
+            bg.style.backgroundColor = data.progressBarBg
+            document.body.style.width = data.progressBarW + "px"
+            pb.style.height = data.progressBarH + "px"
+            bg.style.height = data.progressBarH + "px"
+            txt.style.height = data.progressBarH + "px"
+            txt.style.color = data.titleFontColor
+            txt.style.fontSize = data.titleFontSize + "px"
+    })
+
+
+    socket.on("song-time", (arg) => {
+        let data = JSON.parse(arg)
+        currentTime = data.time
+        duration = data.duration
+        title.innerHTML = data.title
+        console.log(currentTime)
+        $('.hp_range').stop(true,true).animate({'width':(currentTime +.25)/duration*100+'%'},350,'linear');
+    })
+
+
+    </script>
+<style>
+    @font-face {
+        font-family: Nunito;
+        src: url('../fonts/Nunito-Regular.ttf');
+    }
+
+    body{
+        margin: 0;
+        padding: 0;
+        width: 500px;
+    }
+    .hp_slide{
+        width:100%;
+        background:#1A8CF0;
+        height:25px;
+    }
+    .hp_range{
+        width:0;
+        background:#9BEED0;
+        height:25px;
+    }
+    .title{
+        color: white;
+        text-shadow: 1px 1px #000000;
+        left: 5px;
+        position: absolute; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        top:0; 
+        /*background-color: blueviolet;**/
+        height: 25px;
+        font-family: 'Nunito';
+    }
+</style>
+
+</head>
+<body>
+     <div id="bg" class="hp_slide">
+        <div id="txt" class="title"><span id="title"></span></div>
+        <div id="pb" class="hp_range"></div>
+     </div>
+     
+</body>
+</html>
+
+

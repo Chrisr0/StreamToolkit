@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset = 'UTF-8'>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).on('change','#pb',function(){
+            $("#pb_w").css('background-color',""+document.getElementById('pb').value);
+        });
+        $(document).on('change','#bg',function(){
+            $("#bg_w").css('background-color',""+document.getElementById('bg').value);
+        });
+        $(document).on('change','#fc',function(){
+            $("#fc_w").css('background-color',""+document.getElementById('fc').value);
+        });
+
+
+        let bg
+        let pb
+        let size_w
+        let size_h
+        let fc
+        let fs
+        let pl
+        let cfg
+
+        const socket = io("ws://localhost:3000")
+
+        socket.on('cfg', (args) => {
+            const data = JSON.parse(args)
+            cfg  =  data
+            pl.value = data.playlistUrl
+            pb.value = data.progressBarColor
+            bg.value = data.progressBarBg
+            size_w.value = data.progressBarW
+            size_h.value = data.progressBarH
+            fc.value = data.titleFontColor
+            fs.value = data.titleFontSize
+            $("#pb_w").css('background-color',""+document.getElementById('pb').value);
+            $("#bg_w").css('background-color',""+document.getElementById('bg').value);
+            $("#fc_w").css('background-color',""+document.getElementById('fc').value);
+        })
+
+        function saveConfig(){
+            let data = cfg
+            data.playlistUrl = pl.value
+            data.progressBarColor = pb.value
+            data.progressBarBg = bg.value
+            data.progressBarW = size_w.value
+            data.progressBarH = size_h.value
+            data.titleFontColor = fc.value
+            data.titleFontSize = fs.value
+            socket.emit('save-config', JSON.stringify(data))
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            pl = document.getElementById('pl')
+            bg = document.getElementById('bg')
+            pb = document.getElementById('pb')
+            size_w = document.getElementById('size_w')
+            size_h = document.getElementById('size_h')
+            fc = document.getElementById('fc')
+            fs = document.getElementById('fs')
+            socket.emit('request-config')
+        })
+    </script>
+
+    <style>
+        
+    body{
+        overflow: hidden;
+        background-color: #222222;
+        color: white;
+    }
+
+    #pb, #bg, #fc{
+        visibility:hidden;
+    }
+
+    #pb_w, #bg_w, #fc_w{
+        background-color:black;
+        height:20px;
+        width:20px;
+        position:fixed;
+    }
+    
+    .num{
+        width: 100%;
+        background-color: #333333;
+        border:0;
+        border-radius: 50px;
+        outline: 0;
+        color:lightgray;
+        text-align: center;
+    }
+
+    .num::-webkit-outer-spin-button, .num::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .col-xs-3{
+        display: flex;
+        justify-content: center;
+        /**align-items: center;*/
+    }
+
+    .lbl{
+        justify-content: normal;
+    }
+
+    .row{
+        margin: 5px
+    }
+
+    .btn {
+        background-color: dodgerblue;
+        border:0;
+        border-radius: 50px;
+        outline: 0;
+    }
+
+    .btn:focus, .btn:active, .btn:active:focus{
+        outline: none;
+        outline-offset: 0;
+    }
+
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap"><div style="display:flex; justify-content:space-between"><a href="v_youtube.html">Back</a><button class="btn" onclick="saveConfig()">Save</button></div></div>
+        <h1>Settings</h1>
+        <hr>
+        <h4>Overlay</h4>
+        <div class="row flex-nowrap">
+          <div class="col-xs-3 lbl">Progress bar</div>
+          <div class="col-xs-3"><label id="pb_w"><input id="pb" type="color"></label></div>
+          <div class="col-xs-3 lbl">Background</div>
+          <div class="col-xs-3"><label id="bg_w"><input id="bg" type="color"></label></div>
+        </div>
+        <div class="row flex-nowrap">
+            <div class="col-xs-3 lbl">Font size</div>
+            <div class="col-xs-3"><input id="fs" class="num" type="number"></div>
+            <div class="col-xs-3 lbl">Font color</div>
+            <div class="col-xs-3"><label id="fc_w"><input id="fc" type="color"></label></div>
+        </div>
+        <div class="row flex-nowrap">
+            <div class="col-xs-3 lbl">Width</div>
+            <div class="col-xs-3"><input id="size_w" class="num" type="number"></div>
+            <div class="col-xs-3 lbl">Height</div>
+            <div class="col-xs-3"><input id="size_h" class="num" type="number"></div>
+        </div>
+        <div class="row flex-nowrap">
+            <div class="col-xs-9">For easiest setup set browser source dimensions same as overlay's</div>
+            <div class="col-xs-3"><button class="btn" onclick="navigator.clipboard.writeText('http\:\/\/localhost\:3000\/song-progress')">Copy Overlay URL</button></div>
+        </div>
+        <h4>Backup playlist</h4>
+        <div class="row flex-nowrap">
+            <div class="col-xs-3">Playlist URL</div>
+            <div class="col-xs-9"><input id="pl" class="num" type="text"></div>
+          </div>
+      </div>
+    
+</body>
+</html>
