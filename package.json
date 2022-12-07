@@ -1,6 +1,6 @@
 {
   "name": "StreamToolkit",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "socket.io": "^4.5.1",
     "socket.io-client": "^4.5.1",
     "tmi.js": "^1.8.5",
-    "ytdl-core": "github:GreepTheSheep/node-ytdl-core#master",
+    "ytdl-core": "github:matteopolak/node-ytdl-core#d6b56cd67aaa38c22966b98f7b36ad3db4c90192",
     "ytpl": "^2.3.0"
   },
   "build": {

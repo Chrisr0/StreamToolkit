@@ -40,6 +40,7 @@
             size_h.value = data.progressBarH
             fc.value = data.titleFontColor
             fs.value = data.titleFontSize
+            vol.value = data.vol
             $("#pb_w").css('background-color',""+document.getElementById('pb').value);
             $("#bg_w").css('background-color',""+document.getElementById('bg').value);
             $("#fc_w").css('background-color',""+document.getElementById('fc').value);
@@ -54,6 +55,9 @@
             data.progressBarH = size_h.value
             data.titleFontColor = fc.value
             data.titleFontSize = fs.value
+            if(vol.value>100)vol.value = 100
+            if(vol.value<0)vol.value = 0
+            data.vol = vol.value
             socket.emit('save-config', JSON.stringify(data))
         }
 
@@ -65,6 +69,7 @@
             size_h = document.getElementById('size_h')
             fc = document.getElementById('fc')
             fs = document.getElementById('fs')
+            vol = document.getElementById('vol')
             socket.emit('request-config')
         })
     </script>
@@ -163,8 +168,13 @@
         <div class="row flex-nowrap">
             <div class="col-xs-3">Playlist URL</div>
             <div class="col-xs-9"><input id="pl" class="num" type="text"></div>
-          </div>
-      </div>
+        </div>
+        <h4>Other</h4>
+        <div class="row flex-nowrap">
+            <div class="col-xs-3 lbl">Default volume</div>
+            <div class="col-xs-3"><input id="vol" class="num" type="number" min="0" max="100"></div>
+        </div>
+    </div>
     
 </body>
 </html>

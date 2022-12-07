@@ -1,6 +1,7 @@
 let element
 let btnPlay
 let glyphPlay
+let title
 
 window.parent.addEventListener('player-data',(e)=>{
     console.log(e.detail)
@@ -11,6 +12,9 @@ window.parent.addEventListener('player-data',(e)=>{
     }
     if(data.time){
         element.currentTime = data.time
+    }
+    if(data.title){
+        title.innerText = data.author + " : " + data.title
     }
     if(data.playing == true){
         element.play()
@@ -27,6 +31,7 @@ window.parent.addEventListener('player-data',(e)=>{
 
 window.addEventListener('DOMContentLoaded', () => {
     element = document.getElementById("player")
+    title = document.getElementById("title")
     btnPlay = document.getElementById("btn-play")
     glyphPlay = document.getElementById("glyph-play")
     window.parent.sendIpc('request-data', 'player-data')

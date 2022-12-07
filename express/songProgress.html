@@ -37,6 +37,11 @@
 
     socket.on("song-time", (arg) => {
         let data = JSON.parse(arg)
+        if(data.time == "gtfo"){
+            document.body.style.opacity = 0;
+            return
+        }
+        document.body.style.opacity = 1;
         currentTime = data.time
         duration = data.duration
         title.innerHTML = data.title
@@ -56,6 +61,7 @@
         margin: 0;
         padding: 0;
         width: 500px;
+        opacity: 0;
     }
     .hp_slide{
         width:100%;

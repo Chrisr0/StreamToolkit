@@ -5,6 +5,7 @@ const socket = io("ws://localhost:3000")
 
 let path
 let cfg
+let int = false;
 
 window.addEventListener('DOMContentLoaded', () => {
     start()
@@ -21,6 +22,7 @@ let defConfig = {
     titleFontFamily: "Nunito",
     twitchKey:  "",
     twitchChannel: "",
+    vol: "50",
     check: "PASS"
 }
 
@@ -53,7 +55,10 @@ socket.on('save-config', async (args)=>{
 })
 
 async function sendCfg(){
+    if(!int)return
     socket.emit('cfg', JSON.stringify(cfg))
+    console.log("send");
+    console.log(cfg);
 }
 
 async function init(){
@@ -75,7 +80,8 @@ async function init(){
         await fsPromises.writeFile("cfg.txt",JSON.stringify(defConfig))
         cfg = defConfig
     }
-    
+    if(!cfg.vol)cfg.vol=50
+    int = true
     sendCfg()
     console.log(cfg)
 }

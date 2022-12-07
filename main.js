@@ -93,6 +93,8 @@ app.whenReady().then(async () => {
 
     await sleep(1000)
 
+    const debg = false;
+
     const mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
@@ -116,7 +118,7 @@ app.whenReady().then(async () => {
     const chatBot = new BrowserWindow({
         width: 200,
         height: 200,
-        show: false,
+        show: debg,
         webPreferences: {
           nodeIntegration: true,
           contextIsolation: false,
@@ -130,7 +132,7 @@ app.whenReady().then(async () => {
     const ytPlayer = new BrowserWindow({
         width: 200,
         height: 200,
-        show: false,
+        show: debg,
         webPreferences: {
           nodeIntegration: true,
           contextIsolation: false,
@@ -146,7 +148,7 @@ app.whenReady().then(async () => {
   const config = new BrowserWindow({
     width: 200,
     height: 200,
-    show: false,
+    show: debg,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -193,5 +195,30 @@ app.on('ready', function()  {
   autoUpdater.checkForUpdatesAndNotify();
 });
 
+
+app.on('before-quit', () => {
+  data = {
+    time: "gtfo"
+  }
+  jdata = JSON.stringify(data)
+  console.log(data);
+  socket.emit('song-time', jdata)
+})
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+
+//v1.1.1
+//wydluzyc pasek glosnosci
+//zapisac glosnosc - troche ulomnie ale jest tymczasowo w ustawieniach
+//tytul aktualnego na widoku
+//komenda do aktualnego tytulu
+//komenda do skipowania
+//komenda do glosnosci
+
+//TODO
+//lepsze zapisywanie glosnosci
+//komenda do kolejki
+//komenda na relatywne zmienianie glosnosci
+//wyszukiwanie
+//***uzytkownicy do uprawnienia glosnosci itp

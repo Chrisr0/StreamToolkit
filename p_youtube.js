@@ -2,7 +2,7 @@ const ytdl = require('ytdl-core');
 const ytpl = require('ytpl');
 const { ipcRenderer } = require('electron')
 const { io } = require("socket.io-client")
-
+    //"ytdl-core": "github:GreepTheSheep/node-ytdl-core#master",
 const socket = io("ws://localhost:3000")
 
 let element
@@ -10,6 +10,7 @@ let queue = []
 let current; 
 let started = false
 let requestedPlayer = false;
+let requestedConfig = false;
 let playlist
 let plIndex = 0
 let buffer
@@ -22,13 +23,15 @@ async function loadPlaylist(url){
   plIndex = 0
   playlist = await ytpl(url, { limit: 100 });
   let info = await ytdl.getInfo(playlist.items[plIndex++].shortUrl);
-  buffer = {title: info.videoDetails.title, author: info.videoDetails.author.name, url: info.formats[0].url}
+  let format = info.formats.find(element => (element.hasAudio && element.hasVideo));
+  buffer = {title: info.videoDetails.title, author: info.videoDetails.author.name, url: format.url}
   console.log(buffer)
 }
 
 socket.on('cfg', (args)=>{
   const data = JSON.parse(args)
-  console.log(data)
+  if(requestedConfig){element.volume = data.vol/100;requestedConfig=false;socket.emit('volume-data', element.volume)}
+  console.log("playlist" + data)
   loadPlaylist(data.playlistUrl)
 })
 
@@ -69,16 +72,18 @@ async function start(){
     started = true;
 
 
-
+    requestedConfig = true
     socket.emit('request-config')
 }
 
 async function addToQueue(url, target){
+  console.log(url);
   let info = await ytdl.getInfo(url);
   console.log(info);
   let title = "Added to queue: " + info.videoDetails.title
   if(target)sendCommand({type: 'sendMessage', text: title, target: target})
-  queue.push({title: info.videoDetails.title, author: info.videoDetails.author.name, url: info.formats[0].url})
+  let format = info.formats.find(element => (element.hasAudio && element.hasVideo));
+  queue.push({title: info.videoDetails.title, author: info.videoDetails.author.name, url: format.url})
   sendQueue()
   console.log(queue)
   if (element.ended){ 
@@ -108,7 +113,12 @@ async function playNext(){
     {
       plIndex = 0
     }
-    buffer = {title: info.videoDetails.title, author: info.videoDetails.author.name, url: info.formats[0].url}
+    let format = info.formats.find(element => (element.hasAudio && element.hasVideo));
+    buffer = {
+      title: info.videoDetails.title,
+      author: info.videoDetails.author.name,
+      url: format.url
+    }
   }
 }
 
@@ -154,6 +164,14 @@ ipcRenderer.on('request-data', (e, type) => {
 socket.on("request-queue", (args) => {
   console.log("sending queue data")
   sendQueue()
+  
+})
+
+socket.on("send-np", (args) => {
+  if(!args)return
+  let title = "Nothing is playing"
+  if(current) title = current.author + " : " + current.title
+  sendCommand({type: 'sendMessage', text: title, target: args})
   
 })
 
@@ -211,6 +229,8 @@ function sendCommand(data){
 
 function sendPlayerData(){
   data = {
+    title: current.title,
+    author: current.author,
     playing: !element.paused,
     url: element.currentSrc,
     time: element.currentTime

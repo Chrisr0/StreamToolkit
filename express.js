@@ -88,4 +88,8 @@ io.on("connection", (socket) => {
         console.log("forwarding save request")
         io.emit("save-config", arg)
     })
+    socket.on("send-np", (arg) => {
+        console.log("forwarding np request")
+        io.emit("send-np", arg)
+    })
 })
